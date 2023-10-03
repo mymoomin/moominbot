@@ -32,7 +32,7 @@ async def on_message(message: discord.Message):
         return
 
     if message.content.startswith("m! "):
-        message.content = "m!" + message.content[3:]
+        message.content = f"m!{message.content[3:]}"
 
     if message.content.startswith('m!hello') or "<@837276921913147442>" in message.content or "<@!837276921913147442>" in message.content:
         await message.channel.send('Hello!')
@@ -46,21 +46,27 @@ async def on_message(message: discord.Message):
             if groups := re.findall(r"^(\d\d?):(\d\d)$!", match):
                 hours, minutes = groups[0]
                 datetime = dt.combine(now.date(), time(int(hours), int(minutes)), tzinfo=timezone)
-                new_message = new_message.replace("!!" + match + "!!", f"<t:{int(datetime.timestamp())}:t>", 1)
+                new_message = new_message.replace(
+                    f"!!{match}!!", f"<t:{int(datetime.timestamp())}:t>", 1
+                )
 
             if groups := re.findall(r"^(\d\d?):(\d\d) ?(am|pm)$", match):
                 hours, minutes, a_pm = groups[0]
                 offset = timedelta(hours=0) if a_pm == "am" else timedelta(hours=12)
                 datetime = dt.combine(now.date(), time(int(hours), int(minutes)), tzinfo=timezone) + offset
-                new_message = new_message.replace("!!" + match + "!!", f"<t:{int(datetime.timestamp())}:t>", 1)
+                new_message = new_message.replace(
+                    f"!!{match}!!", f"<t:{int(datetime.timestamp())}:t>", 1
+                )
 
             if groups := re.findall(r"^(\d\d?) ?(am|pm)$", match):
                 hours, a_pm = groups[0]
                 offset = timedelta(hours=0) if a_pm == "am" else timedelta(hours=12)
                 datetime = dt.combine(now.date(), time(int(hours), 0), tzinfo=timezone) + offset
-                new_message = new_message.replace("!!" + match + "!!", f"<t:{int(datetime.timestamp())}:t>", 1)
+                new_message = new_message.replace(
+                    f"!!{match}!!", f"<t:{int(datetime.timestamp())}:t>", 1
+                )
         await message.channel.send(new_message)
-    
+
     await bot.process_commands(message)
     
 
@@ -75,9 +81,10 @@ def is_thread():
 async def list(ctx: commands.Context, thing):
     if thing == "members":
         thread_members = await ctx.channel.fetch_members()
-        members = []
-        for thread_member in thread_members:
-            members.append(ctx.guild.get_member(thread_member.id))
+        members = [
+            ctx.guild.get_member(thread_member.id)
+            for thread_member in thread_members
+        ]
         await ctx.send(f"{[member.display_name for member in members]}")
 
 @bot.command()
@@ -161,7 +168,7 @@ async def _exec(ctx: commands.Context, *, expression):
     try:
         output = "a"
         exec(expression)
-        await ctx.send(str(output))
+        await ctx.send(output)
     except Exception as e:
         await ctx.send(str(e))
 
@@ -172,7 +179,7 @@ async def _aexec(ctx: commands.Context, *, expression: str):
     try:
         output = ""
         await aexec(expression)
-        await ctx.send(str(output))
+        await ctx.send(output)
     except Exception as e:
         await ctx.send(str(e))
 
